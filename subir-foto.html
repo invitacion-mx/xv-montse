@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Comparte tu foto — XV Montse</title>
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playfair+Display:ital,wght@0,400;1,400&family=Cormorant+Garamond:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root{--rose:#c9748f;--rose-light:#f0c4d0;--rose-dark:#8e3f56;--cream:#fdf6f0;--gold:#c9a96e;--text-dark:#3a2030;--text-mid:#6b4a58}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:linear-gradient(160deg,#fdf0f5 0%,#f8e6ef 50%,#fdf6f0 100%);min-height:100vh;font-family:'Cormorant Garamond',serif;color:var(--text-dark);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px 20px}
+
+  .header{text-align:center;margin-bottom:32px}
+  .header-label{font-size:.78rem;letter-spacing:.38em;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
+  .header-name{font-family:'Great Vibes',cursive;font-size:clamp(3rem,10vw,5rem);color:var(--rose-dark);line-height:1}
+  .header-sub{font-family:'Playfair Display',serif;font-size:1rem;font-style:italic;color:var(--text-mid);margin-top:8px}
+
+  .divider{display:flex;align-items:center;gap:12px;margin:16px 0}
+  .divider .line{flex:1;height:1px;background:linear-gradient(to right,transparent,var(--rose-light),transparent)}
+  .divider .flower{font-size:1.2rem}
+
+  .card{background:white;border:1px solid var(--rose-light);border-radius:24px;padding:32px 28px;width:100%;max-width:420px;box-shadow:0 8px 40px rgba(201,116,143,.1)}
+
+  /* Zona de carga */
+  .upload-zone{border:2px dashed var(--rose-light);border-radius:16px;padding:36px 20px;text-align:center;cursor:pointer;transition:all .3s;position:relative;overflow:hidden;background:#fdf8fa}
+  .upload-zone:hover,.upload-zone.drag{border-color:var(--rose);background:#fdf0f5}
+  .upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+  .upload-icon{font-size:2.8rem;margin-bottom:10px}
+  .upload-text{font-family:'Playfair Display',serif;font-size:1.1rem;font-style:italic;color:var(--rose-dark);margin-bottom:6px}
+  .upload-sub{font-size:.88rem;color:var(--text-mid)}
+
+  /* Preview */
+  .preview-wrap{display:none;margin-top:18px;position:relative;border-radius:12px;overflow:hidden;border:1px solid var(--rose-light)}
+  .preview-wrap img{width:100%;height:240px;object-fit:cover;display:block}
+  .preview-change{position:absolute;top:10px;right:10px;background:rgba(255,255,255,.85);border:1px solid var(--rose-light);border-radius:20px;padding:5px 12px;font-size:.8rem;color:var(--rose-dark);cursor:pointer;font-family:'Cormorant Garamond',serif;backdrop-filter:blur(4px)}
+
+  /* Nombre */
+  .input-wrap{margin-top:18px}
+  .input-label{font-size:.8rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text-mid);margin-bottom:8px;display:block}
+  .nombre-input{width:100%;padding:14px 18px;border:1px solid var(--rose-light);border-radius:12px;font-family:'Cormorant Garamond',serif;font-size:1.05rem;color:var(--text-dark);outline:none;transition:border-color .3s;background:#fdf8fa}
+  .nombre-input:focus{border-color:var(--rose);background:white}
+  .nombre-input::placeholder{color:#c9a8b4}
+
+  /* Botón */
+  .send-btn{width:100%;margin-top:20px;padding:16px;background:linear-gradient(135deg,var(--rose-dark),#a0455e);border:none;border-radius:12px;color:white;font-family:'Playfair Display',serif;font-size:1.1rem;font-style:italic;letter-spacing:.06em;cursor:pointer;transition:all .3s;box-shadow:0 4px 18px rgba(142,63,86,.3)}
+  .send-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(142,63,86,.4)}
+  .send-btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
+
+  /* Progress */
+  .progress-wrap{display:none;margin-top:16px}
+  .progress-bar-bg{background:var(--rose-light);border-radius:20px;height:8px;overflow:hidden}
+  .progress-bar{background:linear-gradient(90deg,var(--rose-dark),var(--rose));height:100%;width:0%;border-radius:20px;transition:width .3s}
+  .progress-text{font-size:.85rem;color:var(--text-mid);text-align:center;margin-top:8px}
+
+  /* Éxito */
+  .success{display:none;text-align:center;padding:10px 0}
+  .success-icon{font-size:3.5rem;margin-bottom:12px}
+  .success-title{font-family:'Playfair Display',serif;font-size:1.4rem;font-style:italic;color:var(--rose-dark);margin-bottom:8px}
+  .success-sub{font-size:1rem;color:var(--text-mid);line-height:1.7}
+  .success-another{margin-top:20px;padding:12px 28px;background:transparent;border:1.5px solid var(--rose);border-radius:50px;color:var(--rose-dark);font-family:'Cormorant Garamond',serif;font-size:1rem;cursor:pointer;transition:all .3s}
+  .success-another:hover{background:var(--rose);color:white}
+
+  .footer-note{margin-top:24px;font-size:.8rem;color:var(--text-mid);text-align:center;font-style:italic}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <p class="header-label">✦ Fiesta XV Años ✦</p>
+  <h1 class="header-name">Montse</h1>
+  <div class="divider"><span class="line"></span><span class="flower">🌸</span><span class="line"></span></div>
+  <p class="header-sub">Comparte tu foto para tenerla en mi album personal 🎉</p>
+</div>
+
+<div class="card">
+  <div id="form-wrap">
+    <!-- Zona subir foto -->
+    <div class="upload-zone" id="upload-zone">      
+      <input type="file" id="file-input" accept="image/*">
+      <div class="upload-icon">📷</div>
+      <p class="upload-text">Toca para tomar o elegir una foto</p>
+      <p class="upload-sub">JPG, PNG · Máx 10 MB</p>
+    </div>
+
+    <!-- Preview -->
+    <div class="preview-wrap" id="preview-wrap">
+      <img id="preview-img" src="" alt="Vista previa">
+      <button class="preview-change" onclick="cambiarFoto()">✎ Cambiar</button>
+    </div>
+
+    <!-- Nombre -->
+    <div class="input-wrap">
+      <label class="input-label" for="nombre-input">Tu nombre (opcional)</label>
+      <input class="nombre-input" type="text" id="nombre-input" placeholder="Ej. María García" maxlength="50">
+    </div>
+
+    <!-- Progreso -->
+    <div class="progress-wrap" id="progress-wrap">
+      <div class="progress-bar-bg"><div class="progress-bar" id="progress-bar"></div></div>
+      <p class="progress-text" id="progress-text">Subiendo foto... ✨</p>
+    </div>
+
+    <!-- Botón -->
+    <button class="send-btn" id="send-btn" onclick="subirFoto()">Compartir mi foto 📸</button>
+  </div>
+
+  <!-- Éxito -->
+  <div class="success" id="success">
+    <div class="success-icon">🎉</div>
+    <p class="success-title">¡Foto compartida!</p>
+    <p class="success-sub">Tu foto ya está en el albúm<br>de la fiesta! 🌸</p>
+    <button class="success-another" onclick="otraFoto()">📷 Subir otra foto</button>
+  </div>
+</div>
+
+<p class="footer-note">✦ Celebración XV Años Montse · 23 Mayo 2026 ✦<br></p>
+
+<script>
+  const CLOUD_NAME   = "duiitw4fj";
+  const UPLOAD_PRESET = "xv-montse";
+
+  let archivoSeleccionado = null;
+
+  const fileInput   = document.getElementById('file-input');
+  const uploadZone  = document.getElementById('upload-zone');
+  const previewWrap = document.getElementById('preview-wrap');
+  const previewImg  = document.getElementById('preview-img');
+
+  fileInput.addEventListener('change', e => {
+    const file = e.target.files[0];
+    if(!file) return;
+    archivoSeleccionado = file;
+    const url = URL.createObjectURL(file);
+    previewImg.src = url;
+    previewWrap.style.display = 'block';
+    uploadZone.style.display  = 'none';
+  });
+
+  // Drag & drop
+  uploadZone.addEventListener('dragover',  e => { e.preventDefault(); uploadZone.classList.add('drag'); });
+  uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag'));
+  uploadZone.addEventListener('drop', e => {
+    e.preventDefault(); uploadZone.classList.remove('drag');
+    const file = e.dataTransfer.files[0];
+    if(file && file.type.startsWith('image/')){
+      archivoSeleccionado = file;
+      previewImg.src = URL.createObjectURL(file);
+      previewWrap.style.display = 'block';
+      uploadZone.style.display  = 'none';
+    }
+  });
+
+  function cambiarFoto(){
+    archivoSeleccionado = null;
+    fileInput.value = '';
+    previewWrap.style.display = 'none';
+    uploadZone.style.display  = 'block';
+  }
+
+  async function subirFoto(){
+    if(!archivoSeleccionado){
+      uploadZone.style.borderColor = '#e05570';
+      setTimeout(() => uploadZone.style.borderColor = '', 1500);
+      return;
+    }
+
+    const btn          = document.getElementById('send-btn');
+    const progressWrap = document.getElementById('progress-wrap');
+    const progressBar  = document.getElementById('progress-bar');
+    const progressText = document.getElementById('progress-text');
+    const nombre       = document.getElementById('nombre-input').value.trim() || 'Invitado';
+
+    btn.disabled = true;
+    btn.textContent = 'Subiendo... ✨';
+    progressWrap.style.display = 'block';
+
+    const formData = new FormData();
+    formData.append('file', archivoSeleccionado);
+    formData.append('upload_preset', UPLOAD_PRESET);
+    formData.append('folder', 'xv-montse-evento');
+    formData.append('context', `nombre=${nombre}|fecha=${new Date().toLocaleString('es-MX')}`);
+
+    try {
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`);
+
+      xhr.upload.onprogress = e => {
+        if(e.lengthComputable){
+          const pct = Math.round(e.loaded / e.total * 100);
+          progressBar.style.width = pct + '%';
+          progressText.textContent = pct < 100 ? `Subiendo... ${pct}%` : '¡Casi listo! ✨';
+        }
+      };
+
+      xhr.onload = () => {
+        if(xhr.status === 200){
+          document.getElementById('form-wrap').style.display = 'none';
+          document.getElementById('success').style.display   = 'block';
+        } else {
+          manejarError(btn, progressWrap);
+        }
+      };
+
+      xhr.onerror = () => manejarError(btn, progressWrap);
+      xhr.send(formData);
+
+    } catch(err) {
+      manejarError(btn, progressWrap);
+    }
+  }
+
+  function manejarError(btn, progressWrap){
+    btn.disabled = false;
+    btn.textContent = 'Compartir mi foto 📸';
+    progressWrap.style.display = 'none';
+    alert('Hubo un error. Verifica tu internet e intenta de nuevo.');
+  }
+
+  function otraFoto(){
+    archivoSeleccionado = null;
+    fileInput.value = '';
+    document.getElementById('nombre-input').value = '';
+    document.getElementById('progress-bar').style.width = '0%';
+    document.getElementById('progress-wrap').style.display = 'none';
+    document.getElementById('send-btn').disabled = false;
+    document.getElementById('send-btn').textContent = 'Compartir mi foto 📸';
+    previewWrap.style.display = 'none';
+    uploadZone.style.display  = 'block';
+    document.getElementById('form-wrap').style.display = 'block';
+    document.getElementById('success').style.display   = 'none';
+  }
+</script>
+</body>
+</html>

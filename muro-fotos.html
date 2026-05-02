@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Muro de Fotos — XV Montse</title>
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playfair+Display:ital,wght@0,400;1,400&family=Cormorant+Garamond:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root{--rose:#c9748f;--rose-light:#f0c4d0;--rose-dark:#8e3f56;--gold:#c9a96e}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#0f0308;min-height:100vh;overflow:hidden;font-family:'Playfair Display',serif}
+
+  /* ── SLIDESHOW ── */
+  .slide{
+    position:fixed;inset:0;
+    display:flex;align-items:center;justify-content:center;
+    opacity:0;transition:opacity 1.4s ease;
+    pointer-events:none;z-index:1;
+  }
+  .slide.activa{opacity:1;pointer-events:auto}
+
+  .slide-bg{
+    position:absolute;inset:0;
+    background-size:cover;background-position:center;
+    filter:blur(24px) brightness(.3) saturate(1.4);
+    transform:scale(1.1);z-index:0;
+  }
+  .slide-img{
+    position:relative;z-index:2;
+    max-width:90vw;max-height:86vh;
+    object-fit:contain;border-radius:12px;
+    box-shadow:0 24px 80px rgba(0,0,0,.8);
+    animation:suaveZoom 6s ease forwards;
+  }
+  @keyframes suaveZoom{from{transform:scale(1)}to{transform:scale(1.05)}}
+
+  .slide-nombre{
+    position:absolute;bottom:100px;left:50%;transform:translateX(-50%);
+    z-index:3;
+    background:rgba(15,3,8,.6);border:1px solid rgba(201,116,143,.35);
+    border-radius:30px;padding:10px 30px;
+    color:white;font-family:'Cormorant Garamond',serif;
+    font-size:1.25rem;font-style:italic;letter-spacing:.12em;
+    backdrop-filter:blur(8px);white-space:nowrap;
+    animation:fadeUp .8s ease .6s both;
+  }
+  @keyframes fadeUp{from{opacity:0;transform:translateX(-50%) translateY(12px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+
+  /* Decoración esquinas */
+  .slide-deco{position:absolute;z-index:3;color:rgba(201,116,143,.25);font-size:1.8rem;pointer-events:none}
+  .slide-deco.tl{top:24px;left:28px}
+  .slide-deco.tr{top:24px;right:28px}
+  .slide-deco.bl{bottom:24px;left:28px}
+  .slide-deco.br{bottom:24px;right:28px}
+
+  /* ── HEADER ── */
+  .header{
+    position:fixed;top:0;left:0;right:0;z-index:100;
+    padding:16px 32px;
+    display:flex;align-items:center;justify-content:space-between;
+    background:linear-gradient(to bottom,rgba(15,3,8,.85),transparent);
+  }
+  .header-name{font-family:'Great Vibes',cursive;font-size:2.4rem;color:white;text-shadow:0 2px 20px rgba(201,116,143,.5)}
+  .header-sub{font-size:.78rem;letter-spacing:.25em;text-transform:uppercase;color:var(--rose-light);opacity:.7;margin-top:2px}
+  .header-right{display:flex;align-items:center;gap:16px}
+  .foto-count{background:rgba(201,116,143,.15);border:1px solid rgba(201,116,143,.35);border-radius:20px;padding:7px 18px;color:var(--rose-light);font-size:.88rem;letter-spacing:.1em}
+  .live-dot{width:9px;height:9px;border-radius:50%;background:#6fcf97;box-shadow:0 0 8px #6fcf97;animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+
+  /* ── BARRA INFERIOR ── */
+  .bottom-bar{
+    position:fixed;bottom:0;left:0;right:0;z-index:100;
+    padding:14px 32px;
+    display:flex;align-items:center;justify-content:space-between;
+    background:linear-gradient(to top,rgba(15,3,8,.85),transparent);
+  }
+  /* Miniaturas */
+  .thumbs{display:flex;gap:8px;align-items:center}
+  .thumb{
+    width:48px;height:48px;border-radius:8px;object-fit:cover;
+    border:2px solid rgba(201,116,143,.2);cursor:pointer;
+    transition:all .25s;opacity:.5;
+  }
+  .thumb.activa{border-color:var(--rose);opacity:1;transform:scale(1.1)}
+  .thumb:hover{opacity:.85}
+
+  /* Indicadores / puntos */
+  .dots{display:flex;gap:6px;align-items:center}
+  .dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.25);border:none;cursor:pointer;padding:0;transition:all .3s}
+  .dot.activa{background:var(--rose);width:20px;border-radius:4px}
+
+  /* Controles */
+  .controles{display:flex;gap:10px;align-items:center}
+  .ctrl-btn{
+    width:38px;height:38px;border-radius:50%;
+    background:rgba(201,116,143,.15);border:1px solid rgba(201,116,143,.3);
+    color:white;font-size:1rem;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    transition:all .25s;
+  }
+  .ctrl-btn:hover{background:rgba(201,116,143,.35);border-color:var(--rose)}
+  .ctrl-btn.pausa-activa{background:rgba(201,116,143,.35)}
+
+  /* ── EMPTY ── */
+  .empty{
+    position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+    text-align:center;pointer-events:none;z-index:50;
+  }
+  .empty-icon{font-size:4rem;margin-bottom:16px;opacity:.4}
+  .empty-title{font-family:'Great Vibes',cursive;font-size:2.5rem;color:var(--rose-light);opacity:.4;margin-bottom:10px}
+  .empty-sub{font-size:.9rem;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.25);line-height:1.9}
+
+  /* ── TOAST nueva foto ── */
+  .toast-nueva{
+    position:fixed;top:80px;right:24px;
+    transform:translateX(120%);
+    background:rgba(201,116,143,.2);border:1px solid rgba(201,116,143,.5);
+    border-radius:16px;padding:12px 20px;color:white;font-size:.9rem;
+    backdrop-filter:blur(8px);transition:transform .4s;z-index:150;
+  }
+  .toast-nueva.show{transform:translateX(0)}
+
+  /* ── DEBUG ── */
+  .debug{position:fixed;top:80px;left:16px;background:rgba(0,0,0,.7);color:#ccc;font-size:.68rem;padding:8px 12px;border-radius:8px;font-family:monospace;z-index:300;max-width:300px;line-height:1.6;border:1px solid rgba(255,255,255,.08)}
+</style>
+</head>
+<body>
+
+<!-- SLIDES (se generan por JS) -->
+<div id="slides-wrap"></div>
+
+<!-- HEADER -->
+<div class="header">
+  <div>
+    <div class="header-name">Montse</div>
+    <div class="header-sub">✦ Fiesta XV Años · 23 Mayo 2026 ✦</div>
+  </div>
+  <div class="header-right">
+    <div class="foto-count">🌸 <span id="count">0</span> fotos</div>
+    <div class="live-dot"></div>
+  </div>
+</div>
+
+<!-- BARRA INFERIOR -->
+<div class="bottom-bar">
+  <div class="thumbs" id="thumbs"></div>
+  <div class="dots"   id="dots"></div>
+  <div class="controles">
+    <button class="ctrl-btn" onclick="anterior()" title="Anterior">&#8592;</button>
+    <button class="ctrl-btn" id="btn-pausa" onclick="togglePausa()" title="Pausar">⏸</button>
+    <button class="ctrl-btn" onclick="siguiente()" title="Siguiente">&#8594;</button>
+  </div>
+</div>
+
+<!-- EMPTY -->
+<div class="empty" id="empty">
+  <div class="empty-icon">📷</div>
+  <div class="empty-title">Esperando fotos...</div>
+  <div class="empty-sub">Los invitados escanean el QR<br>y sus fotos aparecen aquí</div>
+</div>
+
+<!-- TOAST -->
+<div class="toast-nueva" id="toast-nueva">📸 ¡Nueva foto compartida!</div>
+
+<!-- DEBUG -->
+<div class="debug" id="debug" style="display:none"></div>
+
+<script>
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzNdVPJY8JYTVq8z_Cvkbvz0xbhFdvcOzbAsUMxRr2Fqk9Wp6Wm8sfVK98mxap4u8V6Hw/exec";
+  const CLOUD_NAME = "duiitw4fj";
+  const INTERVALO  = 5000; // ms entre fotos (5 segundos)
+
+  let recursos   = [];
+  let indice     = 0;
+  let pausado    = false;
+  let timer      = null;
+  let fotosVistas = new Set();
+  let ciclo      = 0;
+
+  // ── Slideshow ──
+  function mostrarSlide(i) {
+    indice = (i + recursos.length) % recursos.length;
+    const wrap = document.getElementById('slides-wrap');
+    const slides = wrap.querySelectorAll('.slide');
+    slides.forEach((s, si) => {
+      s.classList.toggle('activa', si === indice);
+    });
+    // Actualizar miniaturas y puntos
+    document.querySelectorAll('.thumb').forEach((t, ti) => t.classList.toggle('activa', ti === indice));
+    document.querySelectorAll('.dot').forEach((d, di)   => d.classList.toggle('activa', di === indice));
+  }
+
+  function siguiente()  { mostrarSlide(indice + 1); reiniciarTimer(); }
+  function anterior()   { mostrarSlide(indice - 1); reiniciarTimer(); }
+
+  function togglePausa() {
+    pausado = !pausado;
+    const btn = document.getElementById('btn-pausa');
+    btn.textContent = pausado ? '▶' : '⏸';
+    btn.classList.toggle('pausa-activa', pausado);
+    if(!pausado) reiniciarTimer();
+    else clearInterval(timer);
+  }
+
+  function reiniciarTimer() {
+    clearInterval(timer);
+    if(!pausado) timer = setInterval(() => mostrarSlide(indice + 1), INTERVALO);
+  }
+
+  // ── Renderizar slides ──
+  function renderSlides(lista, hayNuevas) {
+    const wrap  = document.getElementById('slides-wrap');
+    const thumbsWrap = document.getElementById('thumbs');
+    const dotsWrap   = document.getElementById('dots');
+
+    wrap.innerHTML = '';
+    thumbsWrap.innerHTML = '';
+    dotsWrap.innerHTML   = '';
+
+    lista.forEach((r, i) => {
+      const pubId  = r.public_id;
+      const imgUrl = `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/q_auto,f_auto/${pubId}`;
+      const thumb  = `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/q_auto,f_auto,w_120,h_120,c_fill/${pubId}`;
+      const nombre = r.context?.custom?.nombre || '';
+
+      // Slide
+      const slide = document.createElement('div');
+      slide.className = 'slide' + (i === indice ? ' activa' : '');
+      slide.innerHTML = `
+        <div class="slide-bg" style="background-image:url('${imgUrl}')"></div>
+        <span class="slide-deco tl">🌸</span>
+        <span class="slide-deco tr">✦</span>
+        <span class="slide-deco bl">✦</span>
+        <span class="slide-deco br">🌸</span>
+        <img class="slide-img" src="${imgUrl}" alt="Foto ${i+1}"
+             onerror="this.parentElement.style.display='none'">
+        ${nombre ? `<div class="slide-nombre">🌸 ${nombre}</div>` : ''}
+      `;
+      wrap.appendChild(slide);
+
+      // Miniatura
+      const t = document.createElement('img');
+      t.className = 'thumb' + (i === indice ? ' activa' : '');
+      t.src = thumb; t.alt = '';
+      t.onclick = () => { mostrarSlide(i); reiniciarTimer(); };
+      thumbsWrap.appendChild(t);
+
+      // Punto
+      const d = document.createElement('button');
+      d.className = 'dot' + (i === indice ? ' activa' : '');
+      d.onclick = () => { mostrarSlide(i); reiniciarTimer(); };
+      dotsWrap.appendChild(d);
+    });
+
+    // Si hay foto nueva ir a ella
+    if(hayNuevas) { mostrarSlide(0); reiniciarTimer(); mostrarToast(); }
+  }
+
+  // ── Cargar fotos ──
+  async function cargarFotos() {
+    ciclo++;
+    const dbg = document.getElementById('debug');
+    dbg.textContent = `🔄 Ciclo ${ciclo}...`;
+
+    try {
+      const res  = await fetch(SCRIPT_URL + '?_=' + Date.now());
+      const data = await res.json();
+
+      if(!data.ok){ dbg.textContent = `❌ ${data.error}`; return; }
+
+      const lista = data.recursos || [];
+      dbg.textContent = `✅ ${lista.length} foto(s) — ciclo ${ciclo}`;
+
+      const nuevas    = lista.filter(r => !fotosVistas.has(r.public_id));
+      const hayNuevas = nuevas.length > 0 && fotosVistas.size > 0;
+      nuevas.forEach(r => fotosVistas.add(r.public_id));
+
+      recursos = lista;
+      document.getElementById('count').textContent   = lista.length;
+      document.getElementById('empty').style.display = lista.length > 0 ? 'none' : 'block';
+
+      if(lista.length > 0){
+        renderSlides(lista, hayNuevas);
+        if(fotosVistas.size === lista.length && !timer) reiniciarTimer();
+      }
+
+    } catch(e) {
+      dbg.textContent = `💥 ${e.message}`;
+    }
+  }
+
+  function mostrarToast() {
+    const t = document.getElementById('toast-nueva');
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 4000);
+  }
+
+  cargarFotos();
+  setInterval(cargarFotos, 10000);
+</script>
+</body>
+</html>
